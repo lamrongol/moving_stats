@@ -1,7 +1,7 @@
 [package]
 name = "moving_stats"
 description = "Fixed size queue, which calculate moving median when you add new value(O(n))."
-version = "0.1.3"
+version = "0.1.4"
 edition = "2024"
 license = "MIT"
 license-file = "LICENSE"

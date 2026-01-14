@@ -94,7 +94,7 @@ impl<T: PartialOrd+PartialEq+Clone> MovingMedian::<T> {
     ///None if `is_full()==false`(added values count is smaller than `odd_sampling_size`)  
     pub fn median(&self) -> Option<T> {self.median.to_owned()}
 
-    fn new(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
+    pub fn new(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
         if odd_sampling_size % 2 == 1 {//this also means odd_sampling_siz  >0
             Ok(MovingMedian {
                 odd_sampling_size,
