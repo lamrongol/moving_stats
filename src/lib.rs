@@ -22,56 +22,60 @@ pub struct MovingMedian<T: PartialOrd+Clone> {
 //TODO MovingStats with average, min and max, too; for numeric which allow even integer sampling size
 
 impl<T: PartialOrd+Clone> MovingMedian::<T> {
-    ///Don't add val like NaN, this function can't detect such unusual value
-    pub fn add(&mut self, val: T) {
-        self.queue.push_back(val.to_owned());
-        self.last_put_val = Some(val.to_owned());
+    pub fn add(&mut self, val: T) -> Result<(), &str> {
+        if val!=val {//e.g. f64::NAN
+            Err("argument is not comparable")
+        }else{
+            self.queue.push_back(val.to_owned());
+            self.last_put_val = Some(val.to_owned());
 
-        if !self.is_full {
-            if self.queue.len() == self.odd_sampling_size {
-                self.is_full = true;
+            if !self.is_full {
+                if self.queue.len() == self.odd_sampling_size {
+                    self.is_full = true;
 
-                let mut copy = self.queue.clone();
-                copy .make_contiguous().sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
-                self.median = Some(copy[self.odd_sampling_size / 2].to_owned());
-            }
-        } else {
-            self.last_ejected_val = Some(self.queue.pop_front().unwrap());
-
-            if ((self.last_ejected_val < self.median) && (self.last_put_val < self.median))
-                || ((self.last_ejected_val == self.median) && (self.last_put_val == self.median))
-                || ((self.last_ejected_val > self.median) && (self.last_put_val > self.median))
-            {
-                //do nothing if last_ejected_val and last_put_val are larger, smaller, equals to previous median
-            } else if self.last_put_val > self.median {
-                let mut higher_count = 0;
-                let mut min_over_median = None;
-                for v in self.queue.iter() {
-                    if *v > self.median.to_owned().unwrap() {
-                        higher_count += 1;
-                        if min_over_median.is_none() || *v <= min_over_median.to_owned().unwrap() {
-                            min_over_median = Some(v.to_owned());
-                        }
-                    }
-                }
-                if higher_count > (self.odd_sampling_size / 2) {
-                    self.median = min_over_median;
+                    let mut copy = self.queue.clone();
+                    copy .make_contiguous().sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
+                    self.median = Some(copy[self.odd_sampling_size / 2].to_owned());
                 }
             } else {
-                let mut lower_count = 0;
-                let mut max_under_median = None;
-                for v in self.queue.iter() {
-                    if *v < self.median.to_owned().unwrap() {
-                        lower_count += 1;
-                        if max_under_median.is_none() || *v >= max_under_median.to_owned().unwrap() {
-                            max_under_median = Some(v.to_owned());
+                self.last_ejected_val = Some(self.queue.pop_front().unwrap());
+
+                if ((self.last_ejected_val < self.median) && (self.last_put_val < self.median))
+                    || ((self.last_ejected_val == self.median) && (self.last_put_val == self.median))
+                    || ((self.last_ejected_val > self.median) && (self.last_put_val > self.median))
+                {
+                    //do nothing if last_ejected_val and last_put_val are larger, smaller, equals to previous median
+                } else if self.last_put_val > self.median {
+                    let mut higher_count = 0;
+                    let mut min_over_median = None;
+                    for v in self.queue.iter() {
+                        if *v > self.median.to_owned().unwrap() {
+                            higher_count += 1;
+                            if min_over_median.is_none() || *v <= min_over_median.to_owned().unwrap() {
+                                min_over_median = Some(v.to_owned());
+                            }
                         }
                     }
-                }
-                if lower_count > (self.odd_sampling_size / 2) {
-                    self.median = max_under_median;
+                    if higher_count > (self.odd_sampling_size / 2) {
+                        self.median = min_over_median;
+                    }
+                } else {
+                    let mut lower_count = 0;
+                    let mut max_under_median = None;
+                    for v in self.queue.iter() {
+                        if *v < self.median.to_owned().unwrap() {
+                            lower_count += 1;
+                            if max_under_median.is_none() || *v >= max_under_median.to_owned().unwrap() {
+                                max_under_median = Some(v.to_owned());
+                            }
+                        }
+                    }
+                    if lower_count > (self.odd_sampling_size / 2) {
+                        self.median = max_under_median;
+                    }
                 }
             }
+            Ok(())
         }
     }
 
@@ -124,7 +128,7 @@ mod tests {
         let mut queue:MovingMedian<f64> = MovingMedian::new(3).unwrap();
         assert_eq!(queue.odd_sampling_size(), 3);
         queue.add(3.0);
-        queue.add(7.0);
+    queue.add(7.0).is_err();
         assert_eq!(queue.is_full(), false);
         assert_eq!(queue.median(), None);
         queue.add(6.0);
@@ -140,6 +144,8 @@ mod tests {
         assert_eq!(queue.get(-3).is_err(), true);
         assert_eq!(queue.get(-1), Ok(1.0));
         assert_eq!(queue.get(-2), Ok(9.0));
+        assert_eq!(queue.add(f64::NAN).is_err(), true);
+        assert_eq!(queue.add(5.0).is_err(), false);
 
 
         let mut str_queue:MovingMedian<String> = MovingMedian::new(3).unwrap();

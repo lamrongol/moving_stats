@@ -27,7 +27,8 @@ fn it_works() {
     assert_eq!(queue.get(-3).is_err(), true);
     assert_eq!(queue.get(-1), Ok(1.0));
     assert_eq!(queue.get(-2), Ok(9.0));
-
+    assert_eq!(queue.add(f64::NAN).is_err(), true);
+    assert_eq!(queue.add(5.0).is_err(), false);
 
     let mut str_queue:MovingMedian<String> = MovingMedian::new(3).unwrap();
     str_queue.add(String::from("abc"));
