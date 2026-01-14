@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 /// Fixed size queue, which calculate moving median when you add new value.
 /// sampling size must be odd number because this can be used for all Ord(and Clone) types
 /// computational complexity: O(n) for calculating median, O(nlog(n)) only for first calculation because it simply sorts and finds median.
-struct MovingMedian<T: Ord+Clone> {
+pub struct MovingMedian<T: Ord+Clone> {
     //must be odd for all Ord type(like string)
     odd_sampling_size: usize,
     last_put_val: Option<T>,
@@ -94,7 +94,7 @@ impl<T: Ord+Clone> MovingMedian<T> {
     pub fn median(&self) -> Option<T> {self.median.to_owned()}
 }
 
-fn new<T:Ord+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
+pub fn new<T:Ord+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
     if odd_sampling_size % 2 == 1 {//this also means odd_sampling_siz  >0
         Ok(MovingMedian {
             odd_sampling_size,
