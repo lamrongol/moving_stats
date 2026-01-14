@@ -2,10 +2,10 @@ use std::collections::VecDeque;
 
 #[derive(Debug)]
 /// Fixed size queue, which calculate moving median when you add new value.
-/// sampling size must be odd number because this can be used for all Ord(and Clone) types
+/// sampling size must be odd number because this can be used for all PartialOrd+PartialEq(and Clone) types
 /// computational complexity: O(n) for calculating median, O(nlog(n)) only for first calculation because it simply sorts and finds median.
-pub struct MovingMedian<T: Ord+Clone> {
-    //must be odd for all Ord type(like string)
+pub struct MovingMedian<T: PartialOrd+PartialEq+Clone> {
+    //must be odd for all PartialOrd+PartialEq type(like f64, string)
     odd_sampling_size: usize,
     last_put_val: Option<T>,
     last_ejected_val: Option<T>,
@@ -21,7 +21,8 @@ pub struct MovingMedian<T: Ord+Clone> {
 }
 //TODO MovingStats with average, min and max, too; for numeric which allow even integer sampling size
 
-impl<T: Ord+Clone> MovingMedian<T> {
+impl<T: PartialOrd+PartialEq+Clone> MovingMedian<T> {
+    ///Don't add val like NaN, this function can't detect such unusual value
     pub fn add(&mut self, val: T) {
         self.queue.push_back(val.to_owned());
         self.last_put_val = Some(val.to_owned());
@@ -31,7 +32,7 @@ impl<T: Ord+Clone> MovingMedian<T> {
                 self.is_full = true;
 
                 let mut copy = self.queue.clone();
-                copy .make_contiguous().sort();
+                copy .make_contiguous().sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
                 self.median = Some(copy[self.odd_sampling_size / 2].to_owned());
             }
         } else {
@@ -94,7 +95,7 @@ impl<T: Ord+Clone> MovingMedian<T> {
     pub fn median(&self) -> Option<T> {self.median.to_owned()}
 }
 
-pub fn new<T:Ord+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
+pub fn new<T:PartialOrd+PartialEq+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
     if odd_sampling_size % 2 == 1 {//this also means odd_sampling_siz  >0
         Ok(MovingMedian {
             odd_sampling_size,
@@ -105,7 +106,7 @@ pub fn new<T:Ord+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'
             median: None,
         })
     }else{
-        Err("sampling size must be odd because this is used for all Ord type(e.g. str), which can't be divided by 2")
+        Err("sampling size must be odd because this is used for all PartialOrd+PartialEq type(e.g. f64, str), which can't be divided by 2")
     }
 }
 
