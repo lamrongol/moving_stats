@@ -2,10 +2,10 @@ use std::collections::VecDeque;
 
 #[derive(Debug)]
 /// Fixed size queue, which calculate moving median when you add new value.
-/// sampling size must be odd number because this can be used for all PartialOrd+PartialEq(and Clone) types
+/// sampling size must be odd number because this can be used for all PartialOrd(and Clone) types
 /// computational complexity: O(n) for calculating median, O(nlog(n)) only for first calculation because it simply sorts and finds median.
-pub struct MovingMedian<T: PartialOrd+PartialEq+Clone> {
-    //must be odd for all PartialOrd+PartialEq type(like f64, string)
+pub struct MovingMedian<T: PartialOrd+Clone> {
+    //must be odd for all PartialOrd type(like f64, string)
     odd_sampling_size: usize,
     last_put_val: Option<T>,
     last_ejected_val: Option<T>,
@@ -21,7 +21,7 @@ pub struct MovingMedian<T: PartialOrd+PartialEq+Clone> {
 }
 //TODO MovingStats with average, min and max, too; for numeric which allow even integer sampling size
 
-impl<T: PartialOrd+PartialEq+Clone> MovingMedian::<T> {
+impl<T: PartialOrd+Clone> MovingMedian::<T> {
     ///Don't add val like NaN, this function can't detect such unusual value
     pub fn add(&mut self, val: T) {
         self.queue.push_back(val.to_owned());
@@ -105,7 +105,7 @@ impl<T: PartialOrd+PartialEq+Clone> MovingMedian::<T> {
                 median: None,
             })
         }else{
-            Err("sampling size must be odd because this is used for all PartialOrd+PartialEq type(e.g. f64, str), which can't be divided by 2")
+            Err("sampling size must be odd because this is used for all PartialOrd type(e.g. f64, str), which can't be divided by 2")
         }
     }
 }
