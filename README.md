@@ -7,36 +7,35 @@ computational complexity: O(n) for calculating median, O(nlog(n)) only for first
 
 # Example(part of test Code)
 ```rust
-    #[test]
-    fn it_works() {
-        assert!(new::<i32>(6).is_err());
-        assert!(new::<i32>(0).is_err());
-        let mut queue = new::<i32>(3).unwrap();
-        queue.add(3);
-        queue.add(7);
-        queue.add(6);
-        assert_eq!(queue.is_full(), true);
-        assert_eq!(queue.median(), Some(6));
-        queue.add(9);
-        assert_eq!(queue.median(), Some(7));
-        queue.add(1);
-        assert_eq!(queue.median(), Some(6));
+#[test]
+fn it_works() {
+    let mut queue:MovingMedian<f64> = MovingMedian::new(3).unwrap();
+    queue.add(3.0);
+    queue.add(7.0);
+    assert_eq!(queue.is_full(), false);
+    assert_eq!(queue.median(), None);
+    queue.add(6.0);
+    assert_eq!(queue.is_full(), true);
+    assert_eq!(queue.median(), Some(6.0));
+    queue.add(9.0);
+    assert_eq!(queue.median(), Some(7.0));
+    queue.add(1.0);
+    assert_eq!(queue.median(), Some(6.0));
+    assert_eq!(queue.get(0), Ok(6.0));
+    assert_eq!(queue.get(2), Ok(1.0));
+    assert_eq!(queue.get(3).is_err(), true);
+    assert_eq!(queue.get(-3).is_err(), true);
+    assert_eq!(queue.get(-1), Ok(1.0));
+    assert_eq!(queue.get(-2), Ok(9.0));
 
-        assert_eq!(queue.get(0), Ok(6));
-        assert_eq!(queue.get(2), Ok(1));
-        assert_eq!(queue.get(3).is_err(), true);
-        assert_eq!(queue.get(-3).is_err(), true);
-        assert_eq!(queue.get(-1), Ok(1));
-        assert_eq!(queue.get(-2), Ok(9));
 
-
-        let mut str_queue = new::<String>(3).unwrap();
-        str_queue.add(String::from("abc"));
-        str_queue.add(String::from("def"));
-        str_queue.add(String::from("adc"));
-        assert_eq!(str_queue.is_full(), true);
-        assert_eq!(str_queue.median(), Some(String::from("adc")));
-        str_queue.add(String::from("bbe"));
-        assert_eq!(str_queue.median(), Some(String::from("bbe")));
-    }
+    let mut str_queue:MovingMedian<String> = MovingMedian::new(3).unwrap();
+    str_queue.add(String::from("abc"));
+    str_queue.add(String::from("def"));
+    str_queue.add(String::from("adc"));
+    assert_eq!(str_queue.is_full(), true);
+    assert_eq!(str_queue.median(), Some(String::from("adc")));
+    str_queue.add(String::from("bbe"));
+    assert_eq!(str_queue.median(), Some(String::from("bbe")));
+}
 ```

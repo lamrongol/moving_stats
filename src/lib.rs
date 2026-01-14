@@ -21,7 +21,7 @@ pub struct MovingMedian<T: PartialOrd+PartialEq+Clone> {
 }
 //TODO MovingStats with average, min and max, too; for numeric which allow even integer sampling size
 
-impl<T: PartialOrd+PartialEq+Clone> MovingMedian<T> {
+impl<T: PartialOrd+PartialEq+Clone> MovingMedian::<T> {
     ///Don't add val like NaN, this function can't detect such unusual value
     pub fn add(&mut self, val: T) {
         self.queue.push_back(val.to_owned());
@@ -93,22 +93,23 @@ impl<T: PartialOrd+PartialEq+Clone> MovingMedian<T> {
 
     ///None if `is_full()==false`(added values count is smaller than `odd_sampling_size`)  
     pub fn median(&self) -> Option<T> {self.median.to_owned()}
-}
 
-pub fn new<T:PartialOrd+PartialEq+Clone>(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
-    if odd_sampling_size % 2 == 1 {//this also means odd_sampling_siz  >0
-        Ok(MovingMedian {
-            odd_sampling_size,
-            is_full: false,
-            last_put_val: None,
-            last_ejected_val: None,
-            queue: VecDeque::with_capacity(odd_sampling_size),
-            median: None,
-        })
-    }else{
-        Err("sampling size must be odd because this is used for all PartialOrd+PartialEq type(e.g. f64, str), which can't be divided by 2")
+    fn new(odd_sampling_size: usize) -> Result<MovingMedian<T>,  &'static str> {
+        if odd_sampling_size % 2 == 1 {//this also means odd_sampling_siz  >0
+            Ok(MovingMedian {
+                odd_sampling_size,
+                is_full: false,
+                last_put_val: None,
+                last_ejected_val: None,
+                queue: VecDeque::with_capacity(odd_sampling_size),
+                median: None,
+            })
+        }else{
+            Err("sampling size must be odd because this is used for all PartialOrd+PartialEq type(e.g. f64, str), which can't be divided by 2")
+        }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -116,30 +117,32 @@ mod tests {
 
     #[test]
     fn it_works() {
-        assert!(new::<i32>(6).is_err());
-        assert!(new::<i32>(0).is_err());
-        let mut queue = new::<i32>(3).unwrap();
+        let tmp:Result<MovingMedian<f64>, &str> = MovingMedian::new(6);
+        assert!(tmp.is_err());
+        let tmp:Result<MovingMedian<f64>, &str> = MovingMedian::new(0);
+        assert!(tmp.is_err());
+        let mut queue:MovingMedian<f64> = MovingMedian::new(3).unwrap();
         assert_eq!(queue.odd_sampling_size(), 3);
-        queue.add(3);
-        queue.add(7);
+        queue.add(3.0);
+        queue.add(7.0);
         assert_eq!(queue.is_full(), false);
         assert_eq!(queue.median(), None);
-        queue.add(6);
+        queue.add(6.0);
         assert_eq!(queue.is_full(), true);
-        assert_eq!(queue.median(), Some(6));
-        queue.add(9);
-        assert_eq!(queue.median(), Some(7));
-        queue.add(1);
-        assert_eq!(queue.median(), Some(6));
-        assert_eq!(queue.get(0), Ok(6));
-        assert_eq!(queue.get(2), Ok(1));
+        assert_eq!(queue.median(), Some(6.0));
+        queue.add(9.0);
+        assert_eq!(queue.median(), Some(7.0));
+        queue.add(1.0);
+        assert_eq!(queue.median(), Some(6.0));
+        assert_eq!(queue.get(0), Ok(6.0));
+        assert_eq!(queue.get(2), Ok(1.0));
         assert_eq!(queue.get(3).is_err(), true);
         assert_eq!(queue.get(-3).is_err(), true);
-        assert_eq!(queue.get(-1), Ok(1));
-        assert_eq!(queue.get(-2), Ok(9));
+        assert_eq!(queue.get(-1), Ok(1.0));
+        assert_eq!(queue.get(-2), Ok(9.0));
 
 
-        let mut str_queue = new::<String>(3).unwrap();
+        let mut str_queue:MovingMedian<String> = MovingMedian::new(3).unwrap();
         str_queue.add(String::from("abc"));
         str_queue.add(String::from("def"));
         str_queue.add(String::from("adc"));
@@ -147,6 +150,5 @@ mod tests {
         assert_eq!(str_queue.median(), Some(String::from("adc")));
         str_queue.add(String::from("bbe"));
         assert_eq!(str_queue.median(), Some(String::from("bbe")));
-
     }
 }
