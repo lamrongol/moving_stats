@@ -1,4 +1,5 @@
-use std::collections::VecDeque;
+use std::collections::{vec_deque, VecDeque};
+use std::collections::vec_deque::Iter;
 
 #[derive(Debug)]
 /// Fixed size queue, which calculate moving median when you add new value.
@@ -91,6 +92,8 @@ impl<T: PartialOrd+Clone> MovingMedian::<T> {
             }
         }
     }
+
+    pub fn get_iter(&self) -> Iter<'_, T> {self.queue.iter()}
 
     pub fn odd_sampling_size(&self) -> usize {self.odd_sampling_size}
     pub fn is_full(&self) -> bool {self.is_full}
