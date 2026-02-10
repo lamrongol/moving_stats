@@ -4,7 +4,6 @@ description = "Fixed size queue, which calculate moving median when you add new 
 version = "0.2.1"
 edition = "2024"
 license = "MIT"
-license-file = "LICENSE"
 repository = "https://github.com/lamrongol/moving_stats"
 
 [dependencies]
